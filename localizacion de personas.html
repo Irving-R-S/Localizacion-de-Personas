@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avisos para Localizar Personas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            background-image: url(personas2.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        form input[type="text"],
+        form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        form button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #4cae4c;
+        }
+
+        .avisos-anteriores {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .aviso-imagen {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+        }
+
+        .aviso-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .aviso-container p {
+            font-size: 16px;
+            color: black;
+        }
+
+        .aviso-container strong {
+            font-weight: bold;
+            color: blueviolet;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 20%;
+            right: 20px;
+            width: 250px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 10px;
+        }
+
+        .sidebar img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            display: block;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .sidebar a:hover {
+            color: #0056b3;
+            background-color: #e0e0e0;
+        }
+
+        /* Estilos para la ventana modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto; /* Agregar scroll si el contenido es demasiado largo */
+        }
+
+        .modal-content {
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            max-height: 80%; /* Limitar la altura del modal */
+            overflow: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Estilos para la lista de comentarios */
+        #listaComentarios {
+            list-style: none;
+            padding: 0;
+        }
+
+        #listaComentarios li {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .modal .aviso-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9; /* Color de fondo para que resalte dentro del modal */
+        }
+
+        /* Estilos para las imágenes en los comentarios */
+        .comentario-imagen {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 5px;
+            cursor: pointer; /* Cambiar el cursor para indicar que es clickeable */
+        }
+
+        /* Estilos para el modal de visualización de imágenes */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .image-modal img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .image-modal .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        /* Estilos para la edición de comentarios */
+        .edit-comment-form {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .edit-comment-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .edit-comment-form button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Espacios añadidos */
+        #imagenesComentario,
+        #nuevoComentario,
+        #previewImagenes,
+        .edit-comment-form label,
+        .edit-comment-form input[type="file"],
+        .edit-comment-form button,
+        #imagenesComentario + div, /* Para el div que contiene las imágenes de vista previa */
+        #avisoForm input[type="file"] { /* Para el input file del avisoForm */
+            margin-bottom: 10px; /* Ajusta este valor según necesites */
+        }
+
+        /* Tamaño del cuadro de texto como en la imagen */
+        #nuevoComentario {
+            height: 75px; /* Ajusta este valor según necesites */
+            width: 400px;
+        }
+
+        /* Mantener el texto "Añadir imágenes al comentario (máx. 5):" debajo del input de archivo */
+        #imagenesComentarioLabel {
+            display: block;
+            margin-top: 5px; /* Opcional: agrega un pequeño margen superior para separarlo del input */
+        }
+
+        /* Ajustes para la estructura */
+        .comment-section {
+            margin-top: 10px;
+        }
+
+        /* Estilos adicionales para alinear los elementos */
+        .comment-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Avisos para Localizar Personas</h1>
+        <p>Publica aquí tus avisos para solicitar apoyo a los miembros de la comunidad.</p>
+        <form id="avisoForm">
+            <label for="titulo">Nombre de la persona no localizada:</label>
+            <input type="text" id="titulo" name="titulo" required>
+            <label for="descripcion">Descripción de la persona no localizada:</label>
+            <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+            <label for="Lugar">Lugar donde se vio la última vez o a dónde iba cuando no se localizó:</label>
+            <textarea id="Lugar" name="Lugar" rows="4" required></textarea>
+            <label for="Nombre">Nombre de la persona a contactar:</label>
+            <input type="text" id="Nombre" name="Nombre" placeholder="Escribir Nombre completo." required>
+            <label for="contacto">Contacto:</label>
+            <input type="text" id="contacto" name="contacto" placeholder="Teléfono, correo electrónico, etc." required>
+            <label for="imagen">Poner una foto de la persona no localizada (Formato jpg o jpeg) [Opcional]:</label>
+            <p></p>
+            <input type="file" id="imagen" name="imagen" accept=".jpg, .jpeg">
+            <p></p>
+            <button type="submit">Publicar Aviso</button>
+        </form>
+        <div class="avisos-anteriores">
+            <h2>Avisos Anteriores</h2>
+            <div id="avisosGuardados"></div>
+        </div>
+    </div>
+
+    <!-- Modal para los comentarios -->
+    <div id="comentariosModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Detalles del Aviso y Comentarios</h2>
+            <div id="avisoDetallesModal"></div>
+            <h2>Comentarios</h2>
+            <ul id="listaComentarios"></ul>
+            <div class="comment-section">
+                <div class="comment-input-group">
+                    <textarea id="nuevoComentario" rows="4" placeholder="Escribe tu comentario"></textarea>
+                    <input type="file" id="imagenesComentario" multiple accept="image/*">
+                    <label id="imagenesComentarioLabel" for="imagenesComentario">Añadir imágenes al comentario (máx. 5):</label>
+                    <div id="previewImagenes"></div>
+                </div>
+                <button onclick="agregarComentario()">Enviar Comentario</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cuadro a la derecha con imagen y enlace -->
+    <div class="sidebar">
+        <h3>Si quieres más ayuda visita Locatel</h3>
+        <img src="locatel.jpg" alt="Logo Locatel">
+        <a href="https://cms311.cdmx.gob.mx/personas-no-localizadas/" target="_blank">Visita Locatel</a>
+    </div>
+    
+    <!-- Modal para visualizar imágenes en grande -->
+    <div class="image-modal" id="imageModal">
+        <span class="close" onclick="cerrarModalImagen()">&times;</span>
+        <img src="" alt="Imagen Ampliada" id="modalImage">
+    </div>
+
+    <script>
+        let avisoIndexActual = null;
+        let comentarioIndexActual = null;
+        let imagenesBase64 = []; // Almacenar las imágenes en base64
+        let comentarioEditando = null; // Guarda el índice del comentario que se está editando
+
+        // Función para abrir la ventana modal de comentarios
+        function abrirModalComentarios(index) {
+            avisoIndexActual = index;
+            cargarDetallesAvisoEnModal(index);
+            cargarComentarios(index);
+            document.getElementById('comentariosModal').style.display = 'block';
+        }
+
+        // Función para cargar los detalles del aviso en el modal
+        function cargarDetallesAvisoEnModal(index) {
+            const avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
+            const aviso = avisosGuardados[index];
+
+            if (!aviso) {
+                document.getElementById('avisoDetallesModal').innerHTML = '<p>Aviso no encontrado.</p>';
+                return;
+            }
+
+            let imagenHTML = '';
+            if (aviso.imagenBase64) {
+                imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen">`;
+            }
+            const avisoHTML = `
+                <div class="aviso-container">
+                    <p><strong>Nombre de la persona no Localizada:</strong></p>
+                    <p>${aviso.titulo}</p>
+                    <p><strong>Descripción de la persona:</strong></p>
+                    <p>${aviso.descripcion}</p>
+                    <p><strong>Lugar donde se vio por última vez:</strong></p>
+                    <p>${aviso.Lugar}</p>
+                    <p><strong>Nombre del Contacto:</strong></p>
+                    <p>${aviso.Nombre}</p>
+                    <p><strong>Contacto:</strong></p>
+                    <p>${aviso.contacto}</p>
+                    <p><strong>Foto de la persona no localizada:</strong></p>
+                    <p>${imagenHTML}</p>
+                </div>
+            `;
+
+            document.getElementById('avisoDetallesModal').innerHTML = avisoHTML;
+        }
+
+        // Función para cerrar la ventana modal de comentarios
+        function cerrarModalComentarios() {
+            document.getElementById('comentariosModal').style.display = 'none';
+            // Limpiar las imágenes al cerrar el modal
+            imagenesBase64 = [];
+            document.getElementById('imagenesComentario').value = ''; // Resetear el input file
+            document.getElementById('previewImagenes').innerHTML = ''; // Limpiar la vista previa
+            comentarioEditando = null; // Resetear el comentario que se está editando
+        }
+
+        // Función para cargar los comentarios de un aviso
+        function cargarComentarios(index) {
+            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${index}`)) || [];
+            const listaComentarios = document.getElementById('listaComentarios');
+            listaComentarios.innerHTML = '';
+
+            comentarios.forEach((comentario, comentarioIndex) => {
+                const li = document.createElement('li');
+                li.dataset.comentarioIndex = comentarioIndex; // Guardar el índice del comentario en el elemento li
+                let imagenesHTML = '';
+                if (comentario.imagenes && comentario.imagenes.length > 0) {
+                    imagenesHTML = comentario.imagenes.map(img => `<img src="${img}" class="comentario-imagen" onclick="abrirModalImagen('${img}')">`).join('');
+                }
+                li.innerHTML = `
+                    ${comentario.texto}
+                    ${imagenesHTML}
+                    <button onclick="prepararEditarComentario(${index}, ${comentarioIndex})">Editar</button>
+                    <button onclick="borrarComentario(${index}, ${comentarioIndex})">Borrar</button>
+                    <form class="edit-comment-form" data-index="${comentarioIndex}">
+                        <textarea rows="4">${comentario.texto}</textarea>
+                        <label for="editImagenesComentario-${comentarioIndex}">Editar imágenes (máx. 5):</label>
+                        <input type="file" id="editImagenesComentario-${comentarioIndex}" multiple accept="image/*">
+                        <div id="editPreviewImagenes-${comentarioIndex}">`;
+
+                // Agregar las imágenes existentes en la vista previa de edición
+                if (comentario.imagenes && comentario.imagenes.length > 0) {
+                    imagenesHTML += comentario.imagenes.map(img => `<img src="${img}" class="comentario-imagen" onclick="abrirModalImagen('${img}')">`).join('');
+                }
+
+                li.innerHTML += `
+                        </div>
+                        <button type="button" onclick="guardarEdicionComentario(${index}, ${comentarioIndex})">Guardar</button>
+                    </form>
+                `;
+                listaComentarios.appendChild(li);
+
+                // Agregar event listener para previsualizar las nuevas imágenes seleccionadas
+                const editImagenesInput = document.getElementById(`editImagenesComentario-${comentarioIndex}`);
+                editImagenesInput.addEventListener('change', function(event) {
+                    previsualizarImagenesEdicion(event, comentarioIndex);
+                });
+            });
+        }
+
+        // Función para previsualizar las imágenes a editar
+        function previsualizarImagenesEdicion(event, comentarioIndex) {
+            const files = event.target.files;
+            const previewImagenes = document.getElementById(`editPreviewImagenes-${comentarioIndex}`);
+            previewImagenes.innerHTML = ''; // Limpiar vista previa anterior
+            imagenesBase64 = []; // Limpiar el array de imágenes base64
+
+            if (files.length > 5) {
+                alert("Solo se permiten hasta 5 imágenes.");
+                event.target.value = ''; // Limpiar selección de archivos
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('comentario-imagen');
+                    img.onclick = function() {
+                        abrirModalImagen(e.target.result);
+                    };
+                    previewImagenes.appendChild(img);
+                    imagenesBase64.push(e.target.result); // Guardar la imagen en base64
+                }
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Función para preparar la edición de un comentario
+        function prepararEditarComentario(avisoIndex, comentarioIndex) {
+            // Ocultar todos los formularios de edición y mostrar solo el del comentario que se va a editar
+            document.querySelectorAll('.edit-comment-form').forEach(form => {
+                form.style.display = 'none';
+            });
+            const form = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
+            form.style.display = 'block';
+
+            // Guardar el índice del comentario que se está editando
+            comentarioEditando = comentarioIndex;
+        }
+
+        // Función para guardar la edición de un comentario
+        function guardarEdicionComentario(avisoIndex, comentarioIndex) {
+            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
+            const comentario = comentarios[comentarioIndex];
+
+            // Obtener el nuevo texto del comentario desde el textarea
+            const nuevoTexto = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"] textarea`).value;
+
+            // Obtener las nuevas imágenes seleccionadas
+            const editImagenesInput = document.getElementById(`editImagenesComentario-${comentarioIndex}`);
+            const nuevasImagenes = Array.from(editImagenesInput.files);
+
+            // Convertir las nuevas imágenes a base64
+            const promises = nuevasImagenes.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        resolve(event.target.result);
+                    };
+                    reader.onerror = (error) => {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(promises)
+                .then(imagenesBase64 => {
+                    // Actualizar el comentario con el nuevo texto y las nuevas imágenes
+                    comentario.texto = nuevoTexto;
+                    comentario.imagenes = imagenesBase64;
+
+                    // Guardar los cambios en localStorage
+                    localStorage.setItem(`comentarios-${avisoIndex}`, JSON.stringify(comentarios));
+
+                    // Recargar los comentarios
+                    cargarComentarios(avisoIndex);
+
+                    // Ocultar el formulario de edición
+                    const form = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
+                    form.style.display = 'none';
+
+                    // Resetear el comentario que se está editando
+                    comentarioEditando = null;
+                })
+                .catch(error => {
+                    console.error("Error al leer las imágenes:", error);
+                    alert("Error al guardar la edición del comentario.");
+                });
+        }
+
+        // Función para agregar un comentario a un aviso
+        function agregarComentario() {
+            const comentarioTexto = document.getElementById('nuevoComentario').value.trim();
+            if (!comentarioTexto && imagenesBase64.length === 0) {
+                alert("Por favor, escribe un comentario o añade una imagen.");
+                return;
+            }
+
+            const comentario = {
+                texto: comentarioTexto,
+                imagenes: [...imagenesBase64] // Guarda las imágenes en el comentario
+            };
+
+            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndexActual}`)) || [];
+            comentarios.push(comentario);
+            localStorage.setItem(`comentarios-${avisoIndexActual}`, JSON.stringify(comentarios));
+
+            document.getElementById('nuevoComentario').value = '';
+            imagenesBase64 = []; // Limpiar el array de imágenes
+            document.getElementById('imagenesComentario').value = ''; // Resetear el input file
+            document.getElementById('previewImagenes').innerHTML = ''; // Limpiar la vista previa
+
+            cargarComentarios(avisoIndexActual);
+        }
+        
+        // Función para abrir el modal de la imagen
+        function abrirModalImagen(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.style.display = "block";
+        }
+
+        // Función para cerrar el modal de la imagen
+        function cerrarModalImagen() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = "none";
+        }
+
+        // Función para borrar un comentario
+        function borrarComentario(avisoIndex, comentarioIndex) {
+            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
+            comentarios.splice(comentarioIndex, 1);
+            localStorage.setItem(`comentarios-${avisoIndex}`, JSON.stringify(comentarios));
+            cargarComentarios(avisoIndex);
+        }
+
+        // Evento para cerrar la ventana modal al hacer clic en la "x"
+        document.querySelector('#comentariosModal .close').addEventListener('click', cerrarModalComentarios);
+        
+        // Función para previsualizar las imágenes seleccionadas
+        document.getElementById('imagenesComentario').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const previewImagenes = document.getElementById('previewImagenes');
+            previewImagenes.innerHTML = ''; // Limpiar vista previa anterior
+            imagenesBase64 = []; // Limpiar el array de imágenes base64
+
+            if (files.length > 5) {
+                alert("Solo se permiten hasta 5 imágenes.");
+                this.value = ''; // Limpiar selección de archivos
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('comentario-imagen');
+                    img.onclick = function() {
+                        abrirModalImagen(e.target.result);
+                    };
+                    previewImagenes.appendChild(img);
+                    imagenesBase64.push(e.target.result); // Guardar la imagen en base64
+                }
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Función para cargar los avisos guardados desde localStorage
+        function cargarAvisos() {
+            const avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
+            const contenedorAvisos = document.getElementById('avisosGuardados');
+            contenedorAvisos.innerHTML = '';
+
+            avisosGuardados.forEach((aviso, index) => {
+                let imagenHTML = '';
+                if (aviso.imagenBase64) {
+                    imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen">`;
+                }
+
+                const avisoHTML = `
+                    <div class="aviso-container">
+                        <p><strong>Nombre de la persona no Localizada:</strong></p>
+                        <p>${aviso.titulo}</p>
+                        <p><strong>Descripción de la persona:</strong></p>
+                        <p>${aviso.descripcion}</p>
+                        <p><strong>Lugar donde se vio por última vez:</strong></p>
+                        <p>${aviso.Lugar}</p>
+                        <p><strong>Nombre del Contacto:</strong></p>
+                        <p>${aviso.Nombre}</p>
+                        <p><strong>Contacto:</strong></p>
+                        <p>${aviso.contacto}</p>
+                        <p><strong>Foto de la persona no localizada:</strong></p>
+                        <p>${imagenHTML}</p>
+                        <button onclick="abrirModalComentarios(${index})">Comentarios</button>
+                        <button class="borrar-aviso" data-index="${index}">Borrar</button>
+                    </div>
+                `;
+                contenedorAvisos.innerHTML += avisoHTML;
+            });
+
+            // Agregar event listeners a los botones de borrar
+            document.querySelectorAll('.borrar-aviso').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    borrarAviso(index);
+                });
+            });
+        }
+
+        // Función para borrar un aviso
+        function borrarAviso(index) {
+            let avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
+            avisosGuardados.splice(index, 1);
+            localStorage.setItem('avisos', JSON.stringify(avisosGuardados));
+            cargarAvisos();
+        }
+
+        // Evento para guardar un nuevo aviso
+        document.getElementById('avisoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const titulo = document.getElementById('titulo').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const Lugar = document.getElementById('Lugar').value.trim();
+            const Nombre = document.getElementById('Nombre').value.trim();
+            const contacto = document.getElementById('contacto').value.trim();
+            const imagenInput = document.getElementById('imagen');
+
+            // Validación de campos
+            if (!titulo || !descripcion || !Lugar || !Nombre || !contacto) {
+                alert("Por favor, completa todos los campos obligatorios.");
+                return;
+            }
+
+            function leerImagen(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        resolve(event.target.result);
+                    };
+                    reader.onerror = (error) => {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (imagenInput.files.length > 0) {
+                const file = imagenInput.files[0];
+                if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+                    leerImagen(file)
+                        .then(imagenBase64 => {
+                            guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64);
+                        })
+                        .catch(error => {
+                            console.error("Error al leer la imagen:", error);
+                            guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, null);
+                        });
+                } else {
+                    alert("Por favor, selecciona un archivo de imagen en formato JPG o JPEG.");
+                }
+            } else {
+                guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, null);
+            }
+        });
+
+        function guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64) {
+            let avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
+            avisosGuardados.push({
+                titulo: titulo,
+                descripcion: descripcion,
+                Lugar: Lugar,
+                Nombre: Nombre,
+                contacto: contacto,
+                imagenBase64: imagenBase64
+            });
+            localStorage.setItem('avisos', JSON.stringify(avisosGuardados));
+
+            // Limpiar el formulario
+            document.getElementById('avisoForm').reset();
+
+            // Cargar los avisos
+            cargarAvisos();
+        }
+
+        // Cargar los avisos al cargar la página
+        cargarAvisos();
+    </script>
+</body>
+</html>
