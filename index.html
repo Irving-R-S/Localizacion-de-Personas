@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avisos para Localizar Personas</title>
     <style>
+        /* Reset CSS para asegurar la consistencia entre navegadores */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
             background-color: #f4f4f4;
             background-image: url(personas2.jpg);
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .container {
@@ -20,6 +32,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
             max-width: 800px;
             margin: 20px auto;
             position: relative;
@@ -27,6 +40,7 @@
 
         h1 {
             color: #333;
+            text-align: center;
         }
 
         form label {
@@ -67,10 +81,20 @@
         }
 
         .aviso-imagen {
-            max-width: 200px;
-            max-height: 200px;
+            max-width: 300px;
+            /* Ajustar el ancho máximo de la imagen */
+            height: auto;
+            /* Mantiene la proporción */
             margin-top: 10px;
+            margin-bottom: 20px;
+            /* Añadir un margen inferior para separar de los párrafos */
             cursor: pointer;
+            display: block;
+            /* Asegura que la imagen respete el ancho máximo */
+            margin-left: auto;
+            /* Centrar la imagen horizontalmente */
+            margin-right: auto;
+            /* Centrar la imagen horizontalmente */
         }
 
         .aviso-container {
@@ -83,6 +107,10 @@
         .aviso-container p {
             font-size: 16px;
             color: black;
+            line-height: 1.5;
+            /* Ajustar la altura entre líneas para mejorar la legibilidad */
+            margin-bottom: 10px;
+            /* Espacio entre párrafos */
         }
 
         .aviso-container strong {
@@ -94,7 +122,10 @@
             position: fixed;
             top: 20%;
             right: 20px;
-            width: 250px;
+            width: 20%;
+            /* Ancho relativo */
+            max-width: 250px;
+            /* Ancho máximo */
             padding: 15px;
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
@@ -138,7 +169,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            overflow: auto; /* Agregar scroll si el contenido es demasiado largo */
+            overflow: auto;
         }
 
         .modal-content {
@@ -152,7 +183,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 80%;
             max-width: 600px;
-            max-height: 80%; /* Limitar la altura del modal */
+            max-height: 80%;
             overflow: auto;
         }
 
@@ -183,7 +214,8 @@
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
-            background-color: #f9f9f9; /* Color de fondo para que resalte dentro del modal */
+            background-color: #f9f9f9;
+            /* Color de fondo para que resalte dentro del modal */
         }
 
         /* Estilos para las imágenes en los comentarios */
@@ -191,7 +223,8 @@
             max-width: 100px;
             max-height: 100px;
             margin: 5px;
-            cursor: pointer; /* Cambiar el cursor para indicar que es clickeable */
+            cursor: pointer;
+            /* Cambiar el cursor para indicar que es clickeable */
         }
 
         /* Estilos para el modal de visualización de imágenes */
@@ -254,21 +287,29 @@
         .edit-comment-form label,
         .edit-comment-form input[type="file"],
         .edit-comment-form button,
-        #imagenesComentario + div, /* Para el div que contiene las imágenes de vista previa */
-        #avisoForm input[type="file"] { /* Para el input file del avisoForm */
-            margin-bottom: 10px; /* Ajusta este valor según necesites */
+        #imagenesComentario+div,
+
+        /* Para el div que contiene las imágenes de vista previa */
+        #avisoForm input[type="file"]
+
+        /* Para el input file del avisoForm */
+            {
+            margin-bottom: 10px;
+            /* Ajusta este valor según necesites */
         }
 
         /* Tamaño del cuadro de texto como en la imagen */
         #nuevoComentario {
-            height: 75px; /* Ajusta este valor según necesites */
+            height: 75px;
+            /* Ajusta este valor según necesites */
             width: 400px;
         }
 
         /* Mantener el texto "Añadir imágenes al comentario (máx. 5):" debajo del input de archivo */
         #imagenesComentarioLabel {
             display: block;
-            margin-top: 5px; /* Opcional: agrega un pequeño margen superior para separarlo del input */
+            margin-top: 5px;
+            /* Opcional: agrega un pequeño margen superior para separarlo del input */
         }
 
         /* Ajustes para la estructura */
@@ -283,6 +324,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Avisos para Localizar Personas</h1>
@@ -297,7 +339,8 @@
             <label for="Nombre">Nombre de la persona a contactar:</label>
             <input type="text" id="Nombre" name="Nombre" placeholder="Escribir Nombre completo." required>
             <label for="contacto">Contacto:</label>
-            <input type="text" id="contacto" name="contacto" placeholder="Teléfono, correo electrónico, etc." required>
+            <input type="text" id="contacto" name="contacto" placeholder="Teléfono, correo electrónico, etc."
+                required>
             <label for="imagen">Poner una foto de la persona no localizada (Formato jpg o jpeg):</label>
             <p></p>
             <input type="file" id="imagen" name="imagen" accept=".jpg, .jpeg" required>
@@ -305,7 +348,7 @@
             <button type="submit">Publicar Aviso</button>
         </form>
         <div class="avisos-anteriores">
-            <h2>Avisos Anteriores</h2>
+            <h2>Todos los Avisos</h2>
             <div id="avisosGuardados"></div>
         </div>
     </div>
@@ -336,7 +379,7 @@
         <img src="locatel.jpg" alt="Logo Locatel">
         <a href="https://cms311.cdmx.gob.mx/personas-no-localizadas/" target="_blank">Visita Locatel</a>
     </div>
-    
+
     <!-- Modal para visualizar imágenes en grande -->
     <div class="image-modal" id="imageModal">
         <span class="close" onclick="cerrarModalImagen()">&times;</span>
@@ -375,7 +418,6 @@
                 <div class="aviso-container">
                     <p><strong>Nombre de la persona no Localizada:</strong></p>
                     <p>${aviso.titulo}</p>
-                    <p><strong>Descripción de la persona:</strong></p>
                     <p>${aviso.descripcion}</p>
                     <p><strong>Lugar donde se vio por última vez:</strong></p>
                     <p>${aviso.Lugar}</p>
@@ -438,7 +480,7 @@
 
                 // Agregar event listener para previsualizar las nuevas imágenes seleccionadas
                 const editImagenesInput = document.getElementById(`editImagenesComentario-${comentarioIndex}`);
-                editImagenesInput.addEventListener('change', function(event) {
+                editImagenesInput.addEventListener('change', function (event) {
                     previsualizarImagenesEdicion(event, comentarioIndex);
                 });
             });
@@ -461,7 +503,7 @@
         document.querySelector('#comentariosModal .close').onclick = cerrarModalComentarios;
 
         // Cerrar el modal si se hace clic fuera del contenido
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('comentariosModal');
             if (event.target == modal) {
                 cerrarModalComentarios();
@@ -505,7 +547,7 @@
         }
 
         // Función para previsualizar las imágenes antes de enviar el comentario
-        document.getElementById('imagenesComentario').addEventListener('change', function(event) {
+        document.getElementById('imagenesComentario').addEventListener('change', function (event) {
             previsualizarImagenes(event);
         });
 
@@ -525,11 +567,11 @@
                 const file = files[i];
                 const reader = new FileReader();
 
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.classList.add('comentario-imagen');
-                    img.onclick = function() {
+                    img.onclick = function () {
                         abrirModalImagen(e.target.result);
                     };
                     previewImagenes.appendChild(img);
@@ -624,15 +666,15 @@
                     const file = files[i];
                     const reader = new FileReader();
 
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.classList.add('comentario-imagen');
-                        img.onclick = function() {
+                        img.onclick = function () {
                             abrirModalImagen(e.target.result);
                         };
                         previewImagenes.appendChild(img);
-                        imagenesEditadas.push(e.target.result); // Agregar la imagen al array
+                        imagenesEditadas.push(e.target.result); // Guardar la imagen en base64
                     }
                     reader.readAsDataURL(file);
                 }
@@ -732,11 +774,11 @@
         }
 
         // Cargar los avisos guardados al cargar la página
-        window.onload = function() {
+        window.onload = function () {
             mostrarAvisosGuardados();
 
             // Escuchar el evento submit del formulario
-            document.getElementById('avisoForm').addEventListener('submit', function(event) {
+            document.getElementById('avisoForm').addEventListener('submit', function (event) {
                 event.preventDefault(); // Evitar el envío por defecto
 
                 // Obtener los valores de los campos
@@ -758,7 +800,7 @@
                 const file = imagenInput.files[0];
                 const reader = new FileReader();
 
-                reader.onloadend = function() {
+                reader.onloadend = function () {
                     imagenBase64 = reader.result; // Asignar el resultado a la variable
 
                     // Guardar el aviso con la imagen en base64
@@ -773,15 +815,13 @@
                 }
             });
 
-            // Asigna la función cerrarModalImagen al botón de cerrar del modal
+            // Asigna la función cerrarModalImagen al botón de cierre del modal
             document.querySelector('#imageModal .close').onclick = cerrarModalImagen;
         };
     </script>
 </body>
+
 </html>
 
-
-      
-        
-      
-     
+         
+    
