@@ -70,6 +70,7 @@
             max-width: 200px;
             max-height: 200px;
             margin-top: 10px;
+            cursor: pointer;
         }
 
         .aviso-container {
@@ -297,9 +298,9 @@
             <input type="text" id="Nombre" name="Nombre" placeholder="Escribir Nombre completo." required>
             <label for="contacto">Contacto:</label>
             <input type="text" id="contacto" name="contacto" placeholder="Teléfono, correo electrónico, etc." required>
-            <label for="imagen">Poner una foto de la persona no localizada (Formato jpg o jpeg) [Opcional]:</label>
+            <label for="imagen">Poner una foto de la persona no localizada (Formato jpg o jpeg):</label>
             <p></p>
-            <input type="file" id="imagen" name="imagen" accept=".jpg, .jpeg">
+            <input type="file" id="imagen" name="imagen" accept=".jpg, .jpeg" required>
             <p></p>
             <button type="submit">Publicar Aviso</button>
         </form>
@@ -368,7 +369,7 @@
 
             let imagenHTML = '';
             if (aviso.imagenBase64) {
-                imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen">`;
+                imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen" onclick="abrirModalImagen('${aviso.imagenBase64}')">`;
             }
             const avisoHTML = `
                 <div class="aviso-container">
@@ -386,7 +387,6 @@
                     <p>${imagenHTML}</p>
                 </div>
             `;
-
             document.getElementById('avisoDetallesModal').innerHTML = avisoHTML;
         }
 
@@ -444,16 +444,80 @@
             });
         }
 
-        // Función para previsualizar las imágenes a editar
-        function previsualizarImagenesEdicion(event, comentarioIndex) {
+        // Función para abrir el modal de imagen
+        function abrirModalImagen(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.style.display = 'block';
+        }
+
+        // Función para cerrar el modal de imagen
+        function cerrarModalImagen() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Asigna la función cerrarModalComentarios al botón de cerrar del modal
+        document.querySelector('#comentariosModal .close').onclick = cerrarModalComentarios;
+
+        // Cerrar el modal si se hace clic fuera del contenido
+        window.onclick = function(event) {
+            const modal = document.getElementById('comentariosModal');
+            if (event.target == modal) {
+                cerrarModalComentarios();
+            }
+        }
+
+        // Función para agregar un comentario
+        function agregarComentario() {
+            const nuevoComentario = document.getElementById('nuevoComentario').value;
+
+            if (!nuevoComentario && imagenesBase64.length === 0) {
+                alert('Por favor, escribe un comentario o añade una imagen.');
+                return;
+            }
+
+            if (avisoIndexActual === null) {
+                alert('No se ha seleccionado un aviso para comentar.');
+                return;
+            }
+
+            const comentario = {
+                texto: nuevoComentario,
+                imagenes: [...imagenesBase64] // Copia las imágenes para no modificar el array original
+            };
+
+            // Obtener los comentarios existentes o inicializar un array vacío
+            let comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndexActual}`)) || [];
+            comentarios.push(comentario);
+
+            // Guardar los comentarios actualizados en localStorage
+            localStorage.setItem(`comentarios-${avisoIndexActual}`, JSON.stringify(comentarios));
+
+            // Limpiar el textarea y las imágenes después de agregar el comentario
+            document.getElementById('nuevoComentario').value = '';
+            imagenesBase64 = [];
+            document.getElementById('imagenesComentario').value = ''; // Resetear el input file
+            document.getElementById('previewImagenes').innerHTML = ''; // Limpiar la vista previa
+
+            // Recargar los comentarios en el modal
+            cargarComentarios(avisoIndexActual);
+        }
+
+        // Función para previsualizar las imágenes antes de enviar el comentario
+        document.getElementById('imagenesComentario').addEventListener('change', function(event) {
+            previsualizarImagenes(event);
+        });
+
+        function previsualizarImagenes(event) {
             const files = event.target.files;
-            const previewImagenes = document.getElementById(`editPreviewImagenes-${comentarioIndex}`);
-            previewImagenes.innerHTML = ''; // Limpiar vista previa anterior
-            imagenesBase64 = []; // Limpiar el array de imágenes base64
+            const previewImagenes = document.getElementById('previewImagenes');
+            previewImagenes.innerHTML = ''; // Limpiar la vista previa anterior
+            imagenesBase64 = []; // Limpiar el array de imágenes en base64
 
             if (files.length > 5) {
-                alert("Solo se permiten hasta 5 imágenes.");
-                event.target.value = ''; // Limpiar selección de archivos
+                alert('Solo puedes seleccionar hasta 5 imágenes.');
+                event.target.value = ''; // Limpiar el input file
                 return;
             }
 
@@ -471,169 +535,167 @@
                     previewImagenes.appendChild(img);
                     imagenesBase64.push(e.target.result); // Guardar la imagen en base64
                 }
-
                 reader.readAsDataURL(file);
+            }
+        }
+
+        // Función para borrar un comentario
+        function borrarComentario(avisoIndex, comentarioIndex) {
+            if (confirm('¿Estás seguro de que quieres borrar este comentario?')) {
+                let comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
+                comentarios.splice(comentarioIndex, 1);
+                localStorage.setItem(`comentarios-${avisoIndex}`, JSON.stringify(comentarios));
+                cargarComentarios(avisoIndex);
             }
         }
 
         // Función para preparar la edición de un comentario
         function prepararEditarComentario(avisoIndex, comentarioIndex) {
-            // Ocultar todos los formularios de edición y mostrar solo el del comentario que se va a editar
+            // Oculta todos los formularios de edición
             document.querySelectorAll('.edit-comment-form').forEach(form => {
                 form.style.display = 'none';
             });
-            const form = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
-            form.style.display = 'block';
 
-            // Guardar el índice del comentario que se está editando
+            // Muestra el formulario de edición del comentario actual
+            const formularioEdicion = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
+            formularioEdicion.style.display = 'block';
+
+            // Guarda el índice del comentario que se está editando
             comentarioEditando = comentarioIndex;
         }
 
         // Función para guardar la edición de un comentario
         function guardarEdicionComentario(avisoIndex, comentarioIndex) {
-            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
-            const comentario = comentarios[comentarioIndex];
+            const formularioEdicion = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
+            const nuevoTexto = formularioEdicion.querySelector('textarea').value.trim();
 
-            // Obtener el nuevo texto del comentario desde el textarea
-            const nuevoTexto = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"] textarea`).value;
-
-            // Obtener las nuevas imágenes seleccionadas
-            const editImagenesInput = document.getElementById(`editImagenesComentario-${comentarioIndex}`);
-            const nuevasImagenes = Array.from(editImagenesInput.files);
-
-            // Convertir las nuevas imágenes a base64
-            const promises = nuevasImagenes.map(file => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        resolve(event.target.result);
-                    };
-                    reader.onerror = (error) => {
-                        reject(error);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            Promise.all(promises)
-                .then(imagenesBase64 => {
-                    // Actualizar el comentario con el nuevo texto y las nuevas imágenes
-                    comentario.texto = nuevoTexto;
-                    comentario.imagenes = imagenesBase64;
-
-                    // Guardar los cambios en localStorage
-                    localStorage.setItem(`comentarios-${avisoIndex}`, JSON.stringify(comentarios));
-
-                    // Recargar los comentarios
-                    cargarComentarios(avisoIndex);
-
-                    // Ocultar el formulario de edición
-                    const form = document.querySelector(`.edit-comment-form[data-index="${comentarioIndex}"]`);
-                    form.style.display = 'none';
-
-                    // Resetear el comentario que se está editando
-                    comentarioEditando = null;
-                })
-                .catch(error => {
-                    console.error("Error al leer las imágenes:", error);
-                    alert("Error al guardar la edición del comentario.");
-                });
-        }
-
-        // Función para agregar un comentario a un aviso
-        function agregarComentario() {
-            const comentarioTexto = document.getElementById('nuevoComentario').value.trim();
-            if (!comentarioTexto && imagenesBase64.length === 0) {
-                alert("Por favor, escribe un comentario o añade una imagen.");
+            // Si el nuevo texto está vacío después de quitar espacios en blanco, borrar el comentario
+            if (!nuevoTexto) {
+                borrarComentario(avisoIndex, comentarioIndex);
                 return;
             }
 
-            const comentario = {
-                texto: comentarioTexto,
-                imagenes: [...imagenesBase64] // Guarda las imágenes en el comentario
+            let comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
+
+            // Obtener las imágenes editadas del localStorage
+            const imagenesEditadas = JSON.parse(localStorage.getItem(`imagenesEditadas-${comentarioIndex}`)) || [];
+
+            // Actualizar el comentario con el nuevo texto y las imágenes editadas
+            comentarios[comentarioIndex] = {
+                texto: nuevoTexto,
+                imagenes: imagenesEditadas
             };
 
-            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndexActual}`)) || [];
-            comentarios.push(comentario);
-            localStorage.setItem(`comentarios-${avisoIndexActual}`, JSON.stringify(comentarios));
-
-            document.getElementById('nuevoComentario').value = '';
-            imagenesBase64 = []; // Limpiar el array de imágenes
-            document.getElementById('imagenesComentario').value = ''; // Resetear el input file
-            document.getElementById('previewImagenes').innerHTML = ''; // Limpiar la vista previa
-
-            cargarComentarios(avisoIndexActual);
-        }
-        
-        // Función para abrir el modal de la imagen
-        function abrirModalImagen(src) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modalImg.src = src;
-            modal.style.display = "block";
-        }
-
-        // Función para cerrar el modal de la imagen
-        function cerrarModalImagen() {
-            const modal = document.getElementById('imageModal');
-            modal.style.display = "none";
-        }
-
-        // Función para borrar un comentario
-        function borrarComentario(avisoIndex, comentarioIndex) {
-            const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndex}`)) || [];
-            comentarios.splice(comentarioIndex, 1);
             localStorage.setItem(`comentarios-${avisoIndex}`, JSON.stringify(comentarios));
+            localStorage.removeItem(`imagenesEditadas-${comentarioIndex}`); // Eliminar las imágenes temporales
             cargarComentarios(avisoIndex);
+
+            // Ocultar el formulario de edición después de guardar
+            formularioEdicion.style.display = 'none';
+
+            // Resetear el comentario que se está editando
+            comentarioEditando = null;
         }
 
-        // Evento para cerrar la ventana modal al hacer clic en la "x"
-        document.querySelector('#comentariosModal .close').addEventListener('click', cerrarModalComentarios);
-        
-        // Función para previsualizar las imágenes seleccionadas
-        document.getElementById('imagenesComentario').addEventListener('change', function(event) {
+        function previsualizarImagenesEdicion(event, comentarioIndex) {
             const files = event.target.files;
-            const previewImagenes = document.getElementById('previewImagenes');
-            previewImagenes.innerHTML = ''; // Limpiar vista previa anterior
-            imagenesBase64 = []; // Limpiar el array de imágenes base64
+            const previewImagenes = document.getElementById(`editPreviewImagenes-${comentarioIndex}`);
+            previewImagenes.innerHTML = ''; // Limpiar la vista previa anterior
 
-            if (files.length > 5) {
-                alert("Solo se permiten hasta 5 imágenes.");
-                this.value = ''; // Limpiar selección de archivos
+            let imagenesEditadas = []; // Array para almacenar las imágenes editadas
+            if (comentarioEditando !== null) {
+                // Si estamos editando un comentario, obtener las imágenes existentes
+                const comentarios = JSON.parse(localStorage.getItem(`comentarios-${avisoIndexActual}`)) || [];
+                if (comentarios[comentarioIndex] && comentarios[comentarioIndex].imagenes) {
+                    imagenesEditadas = [...comentarios[comentarioIndex].imagenes];
+                }
+            }
+
+            if (files.length > 0) {
+                // Limitar el número de imágenes a 5 en total (existentes + nuevas)
+                const totalImagenes = imagenesEditadas.length + files.length;
+                if (totalImagenes > 5) {
+                    alert('Solo puedes seleccionar hasta 5 imágenes en total.');
+                    event.target.value = ''; // Limpiar el input file
+                    return;
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('comentario-imagen');
+                        img.onclick = function() {
+                            abrirModalImagen(e.target.result);
+                        };
+                        previewImagenes.appendChild(img);
+                        imagenesEditadas.push(e.target.result); // Agregar la imagen al array
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // Guardar las imágenes editadas en localStorage
+            localStorage.setItem(`imagenesEditadas-${comentarioIndex}`, JSON.stringify(imagenesEditadas));
+        }
+
+        // Función para guardar los avisos en localStorage
+        function guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64) {
+            // Obtener los avisos existentes o inicializar un array vacío
+            let avisos = JSON.parse(localStorage.getItem('avisos')) || [];
+
+            // Crear un objeto con los datos del aviso
+            const aviso = {
+                titulo: titulo,
+                descripcion: descripcion,
+                Lugar: Lugar,
+                Nombre: Nombre,
+                contacto: contacto,
+                imagenBase64: imagenBase64
+            };
+
+            // Agregar el nuevo aviso al array
+            avisos.push(aviso);
+
+            // Guardar el array actualizado en localStorage
+            localStorage.setItem('avisos', JSON.stringify(avisos));
+
+            // Mostrar los avisos guardados
+            mostrarAvisosGuardados();
+        }
+
+        // Función para borrar un aviso
+        function borrarAviso(index) {
+            if (confirm('¿Estás seguro de que quieres borrar este aviso?')) {
+                let avisos = JSON.parse(localStorage.getItem('avisos')) || [];
+                avisos.splice(index, 1);
+                localStorage.setItem('avisos', JSON.stringify(avisos));
+                mostrarAvisosGuardados();
+            }
+        }
+
+        // Función para mostrar los avisos guardados
+        function mostrarAvisosGuardados() {
+            const avisosGuardadosDiv = document.getElementById('avisosGuardados');
+            avisosGuardadosDiv.innerHTML = ''; // Limpiar el contenido anterior
+
+            // Obtener los avisos guardados
+            const avisos = JSON.parse(localStorage.getItem('avisos')) || [];
+
+            if (avisos.length === 0) {
+                avisosGuardadosDiv.innerHTML = '<p>No hay avisos guardados.</p>';
                 return;
             }
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.classList.add('comentario-imagen');
-                    img.onclick = function() {
-                        abrirModalImagen(e.target.result);
-                    };
-                    previewImagenes.appendChild(img);
-                    imagenesBase64.push(e.target.result); // Guardar la imagen en base64
-                }
-
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Función para cargar los avisos guardados desde localStorage
-        function cargarAvisos() {
-            const avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
-            const contenedorAvisos = document.getElementById('avisosGuardados');
-            contenedorAvisos.innerHTML = '';
-
-            avisosGuardados.forEach((aviso, index) => {
+            // Recorrer los avisos y crear elementos HTML para mostrarlos
+            avisos.forEach((aviso, index) => {
                 let imagenHTML = '';
                 if (aviso.imagenBase64) {
-                    imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen">`;
+                    imagenHTML = `<img src="${aviso.imagenBase64}" alt="Imagen del aviso" class="aviso-imagen" onclick="abrirModalImagen('${aviso.imagenBase64}')">`;
                 }
-
                 const avisoHTML = `
                     <div class="aviso-container">
                         <p><strong>Nombre de la persona no Localizada:</strong></p>
@@ -649,99 +711,77 @@
                         <p><strong>Foto de la persona no localizada:</strong></p>
                         <p>${imagenHTML}</p>
                         <button onclick="abrirModalComentarios(${index})">Comentarios</button>
-                        <button class="borrar-aviso" data-index="${index}">Borrar</button>
+                        <button onclick="borrarAviso(${index})">Borrar</button>
                     </div>
                 `;
-                contenedorAvisos.innerHTML += avisoHTML;
-            });
-
-            // Agregar event listeners a los botones de borrar
-            document.querySelectorAll('.borrar-aviso').forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = this.dataset.index;
-                    borrarAviso(index);
-                });
+                avisosGuardadosDiv.innerHTML += avisoHTML;
             });
         }
 
-        // Función para borrar un aviso
-        function borrarAviso(index) {
-            let avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
-            avisosGuardados.splice(index, 1);
-            localStorage.setItem('avisos', JSON.stringify(avisosGuardados));
-            cargarAvisos();
+        // Función para abrir el modal de imagen
+        function abrirModalImagen(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.style.display = 'block';
         }
 
-        // Evento para guardar un nuevo aviso
-        document.getElementById('avisoForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        // Función para cerrar el modal de imagen
+        function cerrarModalImagen() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
 
-            const titulo = document.getElementById('titulo').value.trim();
-            const descripcion = document.getElementById('descripcion').value.trim();
-            const Lugar = document.getElementById('Lugar').value.trim();
-            const Nombre = document.getElementById('Nombre').value.trim();
-            const contacto = document.getElementById('contacto').value.trim();
-            const imagenInput = document.getElementById('imagen');
+        // Cargar los avisos guardados al cargar la página
+        window.onload = function() {
+            mostrarAvisosGuardados();
 
-            // Validación de campos
-            if (!titulo || !descripcion || !Lugar || !Nombre || !contacto) {
-                alert("Por favor, completa todos los campos obligatorios.");
-                return;
-            }
+            // Escuchar el evento submit del formulario
+            document.getElementById('avisoForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Evitar el envío por defecto
 
-            function leerImagen(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        resolve(event.target.result);
-                    };
-                    reader.onerror = (error) => {
-                        reject(error);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
+                // Obtener los valores de los campos
+                const titulo = document.getElementById('titulo').value;
+                const descripcion = document.getElementById('descripcion').value;
+                const Lugar = document.getElementById('Lugar').value;
+                const Nombre = document.getElementById('Nombre').value;
+                const contacto = document.getElementById('contacto').value;
+                const imagenInput = document.getElementById('imagen');
+                let imagenBase64 = ''; // Variable para almacenar la imagen en base64
 
-            if (imagenInput.files.length > 0) {
-                const file = imagenInput.files[0];
-                if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
-                    leerImagen(file)
-                        .then(imagenBase64 => {
-                            guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64);
-                        })
-                        .catch(error => {
-                            console.error("Error al leer la imagen:", error);
-                            guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, null);
-                        });
-                } else {
-                    alert("Por favor, selecciona un archivo de imagen en formato JPG o JPEG.");
+                // Validar que se haya seleccionado una imagen
+                if (imagenInput.files.length === 0) {
+                    alert('Por favor, selecciona una imagen antes de publicar el aviso.');
+                    return; // Detener el proceso si no hay imagen
                 }
-            } else {
-                guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, null);
-            }
-        });
 
-        function guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64) {
-            let avisosGuardados = JSON.parse(localStorage.getItem('avisos')) || [];
-            avisosGuardados.push({
-                titulo: titulo,
-                descripcion: descripcion,
-                Lugar: Lugar,
-                Nombre: Nombre,
-                contacto: contacto,
-                imagenBase64: imagenBase64
+                // Leer la imagen como base64 si se ha seleccionado una
+                const file = imagenInput.files[0];
+                const reader = new FileReader();
+
+                reader.onloadend = function() {
+                    imagenBase64 = reader.result; // Asignar el resultado a la variable
+
+                    // Guardar el aviso con la imagen en base64
+                    guardarAviso(titulo, descripcion, Lugar, Nombre, contacto, imagenBase64);
+
+                    // Limpiar los campos del formulario después de guardar
+                    document.getElementById('avisoForm').reset();
+                }
+
+                if (file) {
+                    reader.readAsDataURL(file); // Leer el archivo como base64
+                }
             });
-            localStorage.setItem('avisos', JSON.stringify(avisosGuardados));
 
-            // Limpiar el formulario
-            document.getElementById('avisoForm').reset();
-
-            // Cargar los avisos
-            cargarAvisos();
-        }
-
-        // Cargar los avisos al cargar la página
-        cargarAvisos();
+            // Asigna la función cerrarModalImagen al botón de cerrar del modal
+            document.querySelector('#imageModal .close').onclick = cerrarModalImagen;
+        };
     </script>
 </body>
 </html>
+
+
+      
+        
+      
+     
